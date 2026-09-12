@@ -40,6 +40,21 @@
 #include "../include/secp256k1_ellswift.h"
 #endif
 
+#ifdef ENABLE_MODULE_SILENTPAYMENTS
+#include "../include/secp256k1_silentpayments.h"
+#endif
+
+#if defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic warning "-Wunused-function"
+#endif
+
+#ifdef ENABLE_MODULE_SCHNORRSIG
+static int nonce_function_custom(unsigned char *nonce32, const unsigned char *msg, size_t msglen, const unsigned char *key32, const unsigned char *xonly_pk32, const unsigned char *algo, size_t algolen, void *data) {
+    return secp256k1_nonce_function_bip340(nonce32, msg, msglen, key32, xonly_pk32, algo, algolen, data);
+}
+#endif
+
 static void run_tests(secp256k1_context *ctx, unsigned char *key);
 
 int main(void) {
@@ -49,7 +64,7 @@ int main(void) {
 
     if (!SECP256K1_CHECKMEM_RUNNING()) {
         fprintf(stderr, "This test can only usefully be run inside valgrind because it was not compiled under msan.\n");
-        fprintf(stderr, "Usage: libtool --mode=execute valgrind ./ctime_tests\n");
+        fprintf(stderr, "Usage: valgrind ./ctime_tests (or with Autotools: libtool --mode=execute valgrind ./ctime_tests)\n");
         return EXIT_FAILURE;
     }
     ctx = secp256k1_context_create(SECP256K1_CONTEXT_DECLASSIFY);
@@ -90,9 +105,34 @@ static void run_tests(secp256k1_context *ctx, unsigned char *key) {
 #ifdef ENABLE_MODULE_EXTRAKEYS
     secp256k1_keypair keypair;
 #endif
+#ifdef ENABLE_MODULE_SCHNORRSIG
+    secp256k1_schnorrsig_extraparams extraparams = SECP256K1_SCHNORRSIG_EXTRAPARAMS_INIT;
+    unsigned char aux_rand[32] = { 0 };
+#endif
 #ifdef ENABLE_MODULE_ELLSWIFT
     unsigned char ellswift[64];
     static const unsigned char prefix[64] = {'t', 'e', 's', 't'};
+#endif
+#ifdef ENABLE_MODULE_SILENTPAYMENTS
+    secp256k1_xonly_pubkey generated_output;
+    secp256k1_xonly_pubkey *generated_outputs[1];
+    secp256k1_silentpayments_recipient recipient;
+    secp256k1_silentpayments_label label;
+    const secp256k1_silentpayments_recipient *recipients[1];
+    unsigned char outpoint_smallest[36] = { 0 };
+    secp256k1_keypair sp_keypair;
+    const secp256k1_keypair *sp_keypairs[1];
+    const unsigned char *sp_seckeys[1];
+    secp256k1_silentpayments_found_output found_outputs[1];
+    secp256k1_silentpayments_found_output *found_outputs_ptrs[1];
+    uint32_t n_found_outputs;
+    const secp256k1_xonly_pubkey *tx_outputs[1];
+    secp256k1_silentpayments_prevouts_summary prevouts_summary;
+    unsigned char label_tweak[32] = { 0 };
+    secp256k1_xonly_pubkey sp_xonly_pubkey;
+    const secp256k1_xonly_pubkey *sp_xonly_pubkeys[1];
+    secp256k1_pubkey sp_pubkey;
+    const secp256k1_pubkey *sp_pubkeys[1];
 #endif
 
     for (i = 0; i < 32; i++) {
@@ -184,6 +224,37 @@ static void run_tests(secp256k1_context *ctx, unsigned char *key) {
     ret = secp256k1_schnorrsig_sign32(ctx, sig, msg, &keypair, NULL);
     SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
     CHECK(ret == 1);
+
+    SECP256K1_CHECKMEM_UNDEFINE(key, 32);
+    ret = secp256k1_keypair_create(ctx, &keypair, key);
+    SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
+    CHECK(ret == 1);
+    SECP256K1_CHECKMEM_UNDEFINE(&keypair, sizeof(keypair));
+    ret = secp256k1_schnorrsig_sign_custom(ctx, sig, msg, 32, &keypair, NULL);
+    SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
+    CHECK(ret == 1);
+
+    extraparams.noncefp = NULL;
+    extraparams.ndata = aux_rand;
+    SECP256K1_CHECKMEM_UNDEFINE(key, 32);
+    ret = secp256k1_keypair_create(ctx, &keypair, key);
+    SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
+    CHECK(ret == 1);
+    SECP256K1_CHECKMEM_UNDEFINE(&keypair, sizeof(keypair));
+    ret = secp256k1_schnorrsig_sign_custom(ctx, sig, msg, 32, &keypair, &extraparams);
+    SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
+    CHECK(ret == 1);
+
+    extraparams.noncefp = nonce_function_custom;
+    extraparams.ndata = aux_rand;
+    SECP256K1_CHECKMEM_UNDEFINE(key, 32);
+    ret = secp256k1_keypair_create(ctx, &keypair, key);
+    SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
+    CHECK(ret == 1);
+    SECP256K1_CHECKMEM_UNDEFINE(&keypair, sizeof(keypair));
+    ret = secp256k1_schnorrsig_sign_custom(ctx, sig, msg, sizeof(msg), &keypair, &extraparams);
+    SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
+    CHECK(ret == 1);
 #endif
 
 #ifdef ENABLE_MODULE_MUSIG
@@ -264,4 +335,61 @@ static void run_tests(secp256k1_context *ctx, unsigned char *key) {
     }
 
 #endif
+
+#ifdef ENABLE_MODULE_SILENTPAYMENTS
+    SECP256K1_CHECKMEM_DEFINE(key, 32);
+
+    generated_outputs[0] = &generated_output;
+
+    /* Initialize recipient */
+    CHECK(secp256k1_ec_pubkey_create(ctx, &recipient.scan_pubkey, key));
+    key[31] ^= 1;
+    CHECK(secp256k1_ec_pubkey_create(ctx, &recipient.spend_pubkey, key));
+    key[31] ^= (1 << 1);
+    recipient.index = 0;
+    recipients[0] = &recipient;
+
+    /* Set up secret keys */
+    SECP256K1_CHECKMEM_UNDEFINE(key, 32);
+    ret = secp256k1_keypair_create(ctx, &sp_keypair, key);
+    SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
+    CHECK(ret);
+    key[31] ^= (1 << 2);
+    sp_keypairs[0] = &sp_keypair;
+    sp_seckeys[0] = key;
+
+    ret = secp256k1_silentpayments_sender_create_outputs(ctx, generated_outputs, recipients, 1, outpoint_smallest, sp_keypairs, 1, sp_seckeys, 1);
+    CHECK(ret == 1);
+
+    ret = secp256k1_silentpayments_recipient_label_create(ctx, &label, label_tweak, key, 0);
+    key[31] ^= (1 << 3);
+    SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
+    CHECK(ret == 1);
+
+    CHECK(secp256k1_keypair_xonly_pub(ctx, &sp_xonly_pubkey, NULL, &sp_keypair));
+    SECP256K1_CHECKMEM_DEFINE(&sp_xonly_pubkey, sizeof(sp_xonly_pubkey));
+    sp_xonly_pubkeys[0] = &sp_xonly_pubkey;
+    ret = secp256k1_ec_pubkey_create(ctx, &sp_pubkey, sp_seckeys[0]);
+    SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
+    CHECK(ret == 1);
+    SECP256K1_CHECKMEM_DEFINE(&sp_pubkey, sizeof(sp_pubkey));
+    sp_pubkeys[0] = &sp_pubkey;
+
+    ret = secp256k1_silentpayments_recipient_prevouts_summary_create(ctx, &prevouts_summary, outpoint_smallest, sp_xonly_pubkeys, 1, sp_pubkeys, 1);
+    CHECK(ret == 1);
+
+    tx_outputs[0] = generated_outputs[0];
+    found_outputs_ptrs[0] = &found_outputs[0];
+    n_found_outputs = 1;
+    SECP256K1_CHECKMEM_DEFINE(&recipient.spend_pubkey, sizeof(recipient.spend_pubkey));
+    /* It is sufficient to check _recipient_scan_outputs without a label lookup function, since the shared secret is created once (which is where the constant timeness matters)
+     * and then reused for the rest of the scanning logic.
+     */
+    CHECK(secp256k1_silentpayments_recipient_scan_outputs(ctx, found_outputs_ptrs, &n_found_outputs, tx_outputs, 1, key, &prevouts_summary, &recipient.spend_pubkey, NULL, NULL));
+
+#endif
 }
+
+#if defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif

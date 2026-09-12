@@ -31,6 +31,11 @@
 #include "testutil.h"
 #include "util.h"
 
+#if defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic warning "-Wunused-function"
+#endif
+
 static int count = 2;
 
 static uint32_t num_cores = 1;
@@ -103,9 +108,11 @@ static void test_exhaustive_addition(const secp256k1_ge *group, const secp256k1_
             secp256k1_gej_add_ge_var(&tmp, &groupj[i], &group[j], NULL);
             CHECK(secp256k1_gej_eq_ge_var(&tmp, &group[(i + j) % EXHAUSTIVE_TEST_ORDER]));
             /* add_zinv_var */
-            zless_gej.infinity = groupj[j].infinity;
-            zless_gej.x = groupj[j].x;
-            zless_gej.y = groupj[j].y;
+            if (secp256k1_gej_is_infinity(&groupj[j])) {
+                secp256k1_ge_set_infinity(&zless_gej);
+            } else {
+                secp256k1_ge_set_xy(&zless_gej, &groupj[j].x, &groupj[j].y);
+            }
             secp256k1_gej_add_zinv_var(&tmp, &groupj[i], &zless_gej, &fe_inv);
             CHECK(secp256k1_gej_eq_ge_var(&tmp, &group[(i + j) % EXHAUSTIVE_TEST_ORDER]));
         }
@@ -213,7 +220,7 @@ static void test_exhaustive_ecmult_multi(const secp256k1_context *ctx, const sec
                         data.pt[0] = group[x];
                         data.pt[1] = group[y];
 
-                        secp256k1_ecmult_multi_var(&ctx->error_callback, scratch, &tmp, &g_sc, ecmult_multi_callback, &data, 2);
+                        CHECK(secp256k1_ecmult_multi_var(&ctx->error_callback, scratch, &tmp, &g_sc, ecmult_multi_callback, &data, 2) == 1);
                         CHECK(secp256k1_gej_eq_ge_var(&tmp, &group[(i * x + j * y + k) % EXHAUSTIVE_TEST_ORDER]));
                     }
                 }
@@ -335,6 +342,10 @@ static void test_exhaustive_sign(const secp256k1_context *ctx, const secp256k1_g
      */
 }
 
+#ifdef ENABLE_MODULE_ECDH
+#include "modules/ecdh/tests_exhaustive_impl.h"
+#endif
+
 #ifdef ENABLE_MODULE_RECOVERY
 #include "modules/recovery/tests_exhaustive_impl.h"
 #endif
@@ -415,17 +426,13 @@ int main(int argc, char** argv) {
             /* Verify against ecmult_gen */
             {
                 secp256k1_scalar scalar_i;
-                secp256k1_gej generatedj;
                 secp256k1_ge generated;
 
                 secp256k1_scalar_set_int(&scalar_i, i);
-                secp256k1_ecmult_gen(&ctx->ecmult_gen_ctx, &generatedj, &scalar_i);
-                secp256k1_ge_set_gej(&generated, &generatedj);
+                secp256k1_ecmult_gen_ge(&ctx->ecmult_gen_ctx, &generated, &scalar_i);
 
-                CHECK(group[i].infinity == 0);
-                CHECK(generated.infinity == 0);
-                CHECK(secp256k1_fe_equal(&generated.x, &group[i].x));
-                CHECK(secp256k1_fe_equal(&generated.y, &group[i].y));
+                CHECK(!secp256k1_ge_is_infinity(&group[i]));
+                CHECK(secp256k1_ge_eq_var(&group[i], &generated));
             }
         }
 
@@ -437,6 +444,9 @@ int main(int argc, char** argv) {
         test_exhaustive_sign(ctx, group);
         test_exhaustive_verify(ctx, group);
 
+#ifdef ENABLE_MODULE_ECDH
+        test_exhaustive_ecdh(ctx, group);
+#endif
 #ifdef ENABLE_MODULE_RECOVERY
         test_exhaustive_recovery(ctx, group);
 #endif
@@ -459,8 +469,10 @@ int main(int argc, char** argv) {
         secp256k1_context_destroy(ctx);
     }
 
-    testrand_finish();
-
     printf("no problems found\n");
     return EXIT_SUCCESS;
 }
+
+#if defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif

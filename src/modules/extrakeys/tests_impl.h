@@ -8,6 +8,7 @@
 #define SECP256K1_MODULE_EXTRAKEYS_TESTS_H
 
 #include "../../../include/secp256k1_extrakeys.h"
+#include "../../unit_test.h"
 
 static void test_xonly_pubkey(void) {
     secp256k1_pubkey pk;
@@ -52,8 +53,8 @@ static void test_xonly_pubkey(void) {
     CHECK(secp256k1_xonly_pubkey_from_pubkey(CTX, &xonly_pk, &pk_parity, &pk) == 1);
     CHECK(secp256k1_memcmp_var(&xonly_pk, &pk, sizeof(xonly_pk)) != 0);
     CHECK(pk_parity == 1);
-    secp256k1_pubkey_load(CTX, &pk1, &pk);
-    secp256k1_pubkey_load(CTX, &pk2, (secp256k1_pubkey *) &xonly_pk);
+    CHECK(secp256k1_pubkey_load(CTX, &pk1, &pk) == 1);
+    CHECK(secp256k1_pubkey_load(CTX, &pk2, (secp256k1_pubkey *) &xonly_pk) == 1);
     CHECK(secp256k1_fe_equal(&pk1.x, &pk2.x) == 1);
     secp256k1_fe_negate(&y, &pk2.y, 1);
     CHECK(secp256k1_fe_equal(&pk1.y, &y) == 1);
@@ -467,17 +468,17 @@ static void test_keypair_add(void) {
     }
 }
 
-static void run_extrakeys_tests(void) {
+/* --- Test registry --- */
+static const struct tf_test_entry tests_extrakeys[] = {
     /* xonly key test cases */
-    test_xonly_pubkey();
-    test_xonly_pubkey_tweak();
-    test_xonly_pubkey_tweak_check();
-    test_xonly_pubkey_tweak_recursive();
-    test_xonly_pubkey_comparison();
-
+    CASE1(test_xonly_pubkey),
+    CASE1(test_xonly_pubkey_tweak),
+    CASE1(test_xonly_pubkey_tweak_check),
+    CASE1(test_xonly_pubkey_tweak_recursive),
+    CASE1(test_xonly_pubkey_comparison),
     /* keypair tests */
-    test_keypair();
-    test_keypair_add();
-}
+    CASE1(test_keypair),
+    CASE1(test_keypair_add),
+};
 
 #endif
