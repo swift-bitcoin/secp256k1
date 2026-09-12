@@ -1,0 +1,12 @@
+module CSECP256K1 {
+    header "../include/secp256k1.h"
+    header "../include/secp256k1_preallocated.h"
+    header "../include/secp256k1_ecdh.h"
+    header "../include/secp256k1_ellswift.h"
+    header "../include/secp256k1_extrakeys.h"
+    header "../include/secp256k1_musig.h"
+    header "../include/secp256k1_recovery.h"
+    header "../include/secp256k1_schnorrsig.h"
+    header "../include/secp256k1_silentpayments.h"
+    export *
+}

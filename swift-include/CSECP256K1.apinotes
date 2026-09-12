@@ -1,0 +1,1102 @@
+---
+# Edited Generated File
+#
+# Unfortunately the code generator can only get us so far.
+# Proper "swiftification" of function names require some hand-crafting.
+#
+# Parameter names, types and positions come from clang's JSON AST, so the
+# positional indices below are never transcribed by hand. Naming choices,
+# fixed-size conventions and deliberate omissions live in the generator.
+#
+# See README-Swift.md for what each key does and why it is needed.
+# See https://clang.llvm.org/docs/APINotes.html for API Notes language reference.
+Name: CSECP256K1
+
+Tags:
+# The opaque context imports as OpaquePointer without this -- no type safety
+# and an unsafe type under strict memory safety. Retain/release are both
+# `immortal` because a retain must return the pointer it was given and
+# secp256k1_context_clone allocates a new context instead, so ARC cannot
+# manage the lifetime. Destruction stays explicit; Secp256k1Context owns it.
+- Name: secp256k1_context_struct
+  SwiftName: "SECP256K1Context"
+  SwiftImportAs: reference
+  SwiftRetainOp: immortal
+  SwiftReleaseOp: immortal
+- Name: secp256k1_pubkey
+  SwiftName: "Pubkey"
+- Name: secp256k1_ecdsa_signature
+  SwiftName: "ECDSASignature"
+- Name: secp256k1_keypair
+  SwiftName: "Keypair"
+
+Functions:
+- Name: secp256k1_context_clone
+  SwiftName: "secp256k1_context.clone(self:)"
+  NullabilityOfRet: O
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+- Name: secp256k1_context_create
+  SwiftName: "secp256k1_context.init(flags:)"
+  NullabilityOfRet: O
+- Name: secp256k1_context_destroy
+  SwiftName: "secp256k1_context.destroy(self:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+- Name: secp256k1_context_preallocated_clone
+  SwiftName: "secp256k1_context.preallocatedClone(self:prealloc:)"
+  NullabilityOfRet: O
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # prealloc
+    Nullability: N
+- Name: secp256k1_context_preallocated_clone_size
+  SwiftName: "secp256k1_context.preallocatedCloneSize(self:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+- Name: secp256k1_context_preallocated_create
+  SwiftName: "secp256k1_context.init(prealloc:)"
+  NullabilityOfRet: O
+  Parameters:
+  - Position: 0          # prealloc
+    Nullability: N
+- Name: secp256k1_context_preallocated_destroy
+  SwiftName: "secp256k1_context.preallocatedDestroy(self:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+- Name: secp256k1_context_randomize
+  SwiftName: "secp256k1_context.randomize(self:seed32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # seed32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: O
+- Name: secp256k1_context_set_error_callback
+  SwiftName: "secp256k1_context.setErrorCallback(self:fun:data:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 2          # data
+    Nullability: O
+- Name: secp256k1_context_set_illegal_callback
+  SwiftName: "secp256k1_context.setIllegalCallback(self:fun:data:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 2          # data
+    Nullability: O
+- Name: secp256k1_context_set_sha256_compression
+  SwiftName: "secp256k1_context.setSHA256Compression(self:fnCompression:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # fn_compression
+    Nullability: O
+- Name: secp256k1_ec_pubkey_cmp
+  SwiftName: "secp256k1_context.ecPubkeyCmp(self:pubkey1:pubkey2:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey1
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # pubkey2
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_ec_pubkey_combine
+  SwiftName: "secp256k1_context.ecPubkeyCombine(self:out:ins:n:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # out
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # ins
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: n }
+    Nullability: N
+- Name: secp256k1_ec_pubkey_create
+  SwiftName: "secp256k1_context.ecPubkeyCreate(self:_:secretKey:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_ec_pubkey_negate
+  SwiftName: "secp256k1_context.ecPubkeyNegate(self:pubkey:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_ec_pubkey_parse
+  SwiftName: "secp256k1_context.ecPubkeyParse(self:_:from:length:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # input
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: inputlen }
+    Nullability: N
+- Name: secp256k1_ec_pubkey_serialize
+  SwiftName: "secp256k1_context.ecPubkeySerialize(self:output:outputlen:pubkey:flags:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 65 }
+    Nullability: N
+  - Position: 2          # outputlen
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 3          # pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_ec_pubkey_sort
+  SwiftName: "secp256k1_context.ecPubkeySort(self:pubkeys:nPubkeys:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkeys
+    Nullability: N
+- Name: secp256k1_ec_pubkey_tweak_add
+  SwiftName: "secp256k1_context.ecPubkeyTweakAdd(self:pubkey:tweak32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_ec_pubkey_tweak_mul
+  SwiftName: "secp256k1_context.ecPubkeyTweakMul(self:pubkey:tweak32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    Nullability: N
+  - Position: 2          # tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_ec_seckey_negate
+  SwiftName: "secp256k1_context.ecSeckeyNegate(self:seckey:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_ec_seckey_tweak_add
+  SwiftName: "secp256k1_context.ecSeckeyTweakAdd(self:seckey:tweak32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 2          # tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_ec_seckey_tweak_mul
+  SwiftName: "secp256k1_context.ecSeckeyTweakMul(self:seckey:tweak32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 2          # tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_ec_seckey_verify
+  SwiftName: "secp256k1_context.ecSeckeyVerify(self:_:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_ecdh
+  SwiftName: "secp256k1_context.ecdh(self:output:pubkey:seckey:hashfp:data:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output
+    Nullability: N
+  - Position: 2          # pubkey
+    Nullability: N
+  - Position: 3          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 4          # hashfp
+    Nullability: O
+  - Position: 5          # data
+    Nullability: O
+- Name: secp256k1_ecdsa_recover
+  SwiftName: "secp256k1_context.ecdsaRecover(self:pubkey:sig:msghash32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    Nullability: N
+  - Position: 2          # sig
+    Nullability: N
+  - Position: 3          # msghash32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_ecdsa_recoverable_signature_convert
+  SwiftName: "secp256k1_context.ecdsaRecoverableSignatureConvert(self:sig:sigin:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig
+    Nullability: N
+  - Position: 2          # sigin
+    Nullability: N
+- Name: secp256k1_ecdsa_recoverable_signature_parse_compact
+  SwiftName: "secp256k1_context.ecdsaRecoverableSignatureParseCompact(self:sig:input64:recid:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig
+    Nullability: N
+  - Position: 2          # input64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+- Name: secp256k1_ecdsa_recoverable_signature_serialize_compact
+  SwiftName: "secp256k1_context.ecdsaRecoverableSignatureSerializeCompact(self:output64:recid:sig:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 2          # recid
+    Nullability: N
+  - Position: 3          # sig
+    Nullability: N
+- Name: secp256k1_ecdsa_sign
+  SwiftName: "secp256k1_context.ecdsaSign(self:_:messageHash:secretKey:nonceFunction:nonceData:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # msghash32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 3          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 4          # noncefp
+    Nullability: O
+  - Position: 5          # ndata
+    Nullability: O
+- Name: secp256k1_ecdsa_sign_recoverable
+  SwiftName: "secp256k1_context.ecdsaSignRecoverable(self:sig:msghash32:seckey:noncefp:ndata:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig
+    Nullability: N
+  - Position: 2          # msghash32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 3          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 4          # noncefp
+    Nullability: O
+  - Position: 5          # ndata
+    Nullability: O
+- Name: secp256k1_ecdsa_signature_normalize
+  SwiftName: "secp256k1_context.ecdsaSignatureNormalize(self:sigout:sigin:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sigout
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: O
+  - Position: 2          # sigin
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_ecdsa_signature_parse_compact
+  SwiftName: "secp256k1_context.ecdsaSignatureParseCompact(self:_:compact:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # input64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+- Name: secp256k1_ecdsa_signature_parse_der
+  SwiftName: "secp256k1_context.ecdsaSignatureParseDER(self:sig:input:inputlen:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # input
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: inputlen }
+    Nullability: N
+- Name: secp256k1_ecdsa_signature_serialize_compact
+  SwiftName: "secp256k1_context.ecdsaSignatureSerializeCompact(self:into:_:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 2          # sig
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+    ## TODO: { Kind: counted_by, BoundedBy: 1 } isn't being generated by the plugin at the moment so this is a manual edit.
+    # Ideally we could use something like `Type: "const secp256k1_ecdsa_signature * _Nonnull __single"` but currently the synthesizer crashes with that input.
+- Name: secp256k1_ecdsa_signature_serialize_der
+  SwiftName: "secp256k1_context.ecdsaSignatureSerializeDER(self:output:outputlen:sig:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 72 }
+    Nullability: N
+  - Position: 2          # outputlen
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 3          # sig
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_ecdsa_verify
+  SwiftName: "secp256k1_context.ecdsaVerify(self:_:messageHash:publicKey:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # msghash32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 3          # pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_ellswift_create
+  SwiftName: "secp256k1_context.ellswiftCreate(self:ell64:seckey32:auxrnd32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # ell64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 2          # seckey32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 3          # auxrnd32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: O
+- Name: secp256k1_ellswift_decode
+  SwiftName: "secp256k1_context.ellswiftDecode(self:pubkey:ell64:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    Nullability: N
+  - Position: 2          # ell64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+- Name: secp256k1_ellswift_encode
+  SwiftName: "secp256k1_context.ellswiftEncode(self:ell64:pubkey:rnd32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # ell64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 2          # pubkey
+    Nullability: N
+  - Position: 3          # rnd32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_ellswift_xdh
+  SwiftName: "secp256k1_context.ellswiftXDH(self:output:ellA64:ellB64:seckey32:party:hashfp:data:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output
+    Nullability: N
+  - Position: 2          # ell_a64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 3          # ell_b64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 4          # seckey32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 6          # hashfp
+    Nullability: N
+  - Position: 7          # data
+    Nullability: O
+- Name: secp256k1_keypair_create
+  SwiftName: "secp256k1_context.keypairCreate(self:keypair:seckey:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # keypair
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_keypair_pub
+  SwiftName: "secp256k1_context.keypairPub(self:pubkey:keypair:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # keypair
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_keypair_sec
+  SwiftName: "secp256k1_context.keypairSec(self:seckey:keypair:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 2          # keypair
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_keypair_xonly_pub
+  SwiftName: "secp256k1_context.keypairXOnlyPub(self:pubkey:pkParity:keypair:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # pk_parity
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: O
+  - Position: 3          # keypair
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_keypair_xonly_tweak_add
+  SwiftName: "secp256k1_context.keypairXOnlyTweakAdd(self:keypair:tweak32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # keypair
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_musig_aggnonce_parse
+  SwiftName: "secp256k1_context.musigAggnonceParse(self:nonce:in66:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # nonce
+    Nullability: N
+  - Position: 2          # in66
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 66 }
+    Nullability: N
+- Name: secp256k1_musig_aggnonce_serialize
+  SwiftName: "secp256k1_context.musigAggnonceSerialize(self:out66:nonce:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # out66
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 66 }
+    Nullability: N
+  - Position: 2          # nonce
+    Nullability: N
+- Name: secp256k1_musig_nonce_agg
+  SwiftName: "secp256k1_context.musigNonceAgg(self:aggnonce:pubnonces:nPubnonces:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # aggnonce
+    Nullability: N
+  - Position: 2          # pubnonces
+    Nullability: N
+- Name: secp256k1_musig_nonce_gen
+  SwiftName: "secp256k1_context.musigNonceGen(self:secnonce:pubnonce:sessionSecrand32:seckey:pubkey:msg32:keyaggCache:extraInput32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # secnonce
+    Nullability: N
+  - Position: 2          # pubnonce
+    Nullability: N
+  - Position: 3          # session_secrand32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 4          # seckey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: O
+  - Position: 5          # pubkey
+    Nullability: N
+  - Position: 6          # msg32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: O
+  - Position: 7          # keyagg_cache
+    Nullability: O
+  - Position: 8          # extra_input32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: O
+- Name: secp256k1_musig_nonce_gen_counter
+  SwiftName: "secp256k1_context.musigNonceGenCounter(self:secnonce:pubnonce:nonrepeatingCnt:keypair:msg32:keyaggCache:extraInput32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # secnonce
+    Nullability: N
+  - Position: 2          # pubnonce
+    Nullability: N
+  - Position: 4          # keypair
+    Nullability: N
+  - Position: 5          # msg32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: O
+  - Position: 6          # keyagg_cache
+    Nullability: O
+  - Position: 7          # extra_input32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: O
+- Name: secp256k1_musig_nonce_process
+  SwiftName: "secp256k1_context.musigNonceProcess(self:session:aggnonce:msg32:keyaggCache:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # session
+    Nullability: N
+  - Position: 2          # aggnonce
+    Nullability: N
+  - Position: 3          # msg32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 4          # keyagg_cache
+    Nullability: N
+- Name: secp256k1_musig_partial_sig_agg
+  SwiftName: "secp256k1_context.musigPartialSigAgg(self:sig64:session:partialSigs:nSigs:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 2          # session
+    Nullability: N
+  - Position: 3          # partial_sigs
+    Nullability: N
+- Name: secp256k1_musig_partial_sig_parse
+  SwiftName: "secp256k1_context.musigPartialSigParse(self:sig:in32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig
+    Nullability: N
+  - Position: 2          # in32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_musig_partial_sig_serialize
+  SwiftName: "secp256k1_context.musigPartialSigSerialize(self:out32:sig:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # out32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 2          # sig
+    Nullability: N
+- Name: secp256k1_musig_partial_sig_verify
+  SwiftName: "secp256k1_context.musigPartialSigVerify(self:partialSig:pubnonce:pubkey:keyaggCache:session:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # partial_sig
+    Nullability: N
+  - Position: 2          # pubnonce
+    Nullability: N
+  - Position: 3          # pubkey
+    Nullability: N
+  - Position: 4          # keyagg_cache
+    Nullability: N
+  - Position: 5          # session
+    Nullability: N
+- Name: secp256k1_musig_partial_sign
+  SwiftName: "secp256k1_context.musigPartialSign(self:partialSig:secnonce:keypair:keyaggCache:session:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # partial_sig
+    Nullability: N
+  - Position: 2          # secnonce
+    Nullability: N
+  - Position: 3          # keypair
+    Nullability: N
+  - Position: 4          # keyagg_cache
+    Nullability: N
+  - Position: 5          # session
+    Nullability: N
+- Name: secp256k1_musig_pubkey_agg
+  SwiftName: "secp256k1_context.musigPubkeyAgg(self:aggPk:keyaggCache:pubkeys:nPubkeys:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # agg_pk
+    Nullability: O
+  - Position: 2          # keyagg_cache
+    Nullability: O
+  - Position: 3          # pubkeys
+    Nullability: N
+- Name: secp256k1_musig_pubkey_ec_tweak_add
+  SwiftName: "secp256k1_context.musigPubkeyEcTweakAdd(self:outputPubkey:keyaggCache:tweak32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output_pubkey
+    Nullability: O
+  - Position: 2          # keyagg_cache
+    Nullability: N
+  - Position: 3          # tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_musig_pubkey_get
+  SwiftName: "secp256k1_context.musigPubkeyGet(self:aggPk:keyaggCache:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # agg_pk
+    Nullability: N
+  - Position: 2          # keyagg_cache
+    Nullability: N
+- Name: secp256k1_musig_pubkey_xonly_tweak_add
+  SwiftName: "secp256k1_context.musigPubkeyXOnlyTweakAdd(self:outputPubkey:keyaggCache:tweak32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output_pubkey
+    Nullability: O
+  - Position: 2          # keyagg_cache
+    Nullability: N
+  - Position: 3          # tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_musig_pubnonce_parse
+  SwiftName: "secp256k1_context.musigPubnonceParse(self:nonce:in66:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # nonce
+    Nullability: N
+  - Position: 2          # in66
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 66 }
+    Nullability: N
+- Name: secp256k1_musig_pubnonce_serialize
+  SwiftName: "secp256k1_context.musigPubnonceSerialize(self:out66:nonce:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # out66
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 66 }
+    Nullability: N
+  - Position: 2          # nonce
+    Nullability: N
+- Name: secp256k1_schnorrsig_sign32
+  SwiftName: "secp256k1_context.schnorrsigSign32(self:sig64:msg32:keypair:auxRand32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 2          # msg32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 3          # keypair
+    Nullability: N
+  - Position: 4          # aux_rand32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: O
+- Name: secp256k1_schnorrsig_sign_custom
+  SwiftName: "secp256k1_context.schnorrsigSignCustom(self:sig64:msg:msglen:keypair:extraparams:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 2          # msg
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: msglen }
+    Nullability: O
+  - Position: 4          # keypair
+    Nullability: N
+  - Position: 5          # extraparams
+    Nullability: O
+- Name: secp256k1_schnorrsig_verify
+  SwiftName: "secp256k1_context.schnorrsigVerify(self:sig64:msg:msglen:pubkey:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # sig64
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 64 }
+    Nullability: N
+  - Position: 2          # msg
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: msglen }
+    Nullability: O
+  - Position: 4          # pubkey
+    Nullability: N
+- Name: secp256k1_silentpayments_recipient_create_labeled_spend_pubkey
+  SwiftName: "secp256k1_context.silentpaymentsRecipientCreateLabeledSpendPubkey(self:labeledSpendPubkey:unlabeledSpendPubkey:label:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # labeled_spend_pubkey
+    Nullability: N
+  - Position: 2          # unlabeled_spend_pubkey
+    Nullability: N
+  - Position: 3          # label
+    Nullability: N
+- Name: secp256k1_silentpayments_recipient_label_create
+  SwiftName: "secp256k1_context.silentpaymentsRecipientLabelCreate(self:label:labelTweak32:scanKey32:m:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # label
+    Nullability: N
+  - Position: 2          # label_tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 3          # scan_key32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_silentpayments_recipient_label_parse
+  SwiftName: "secp256k1_context.silentpaymentsRecipientLabelParse(self:label:in33:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # label
+    Nullability: N
+  - Position: 2          # in33
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 33 }
+    Nullability: N
+- Name: secp256k1_silentpayments_recipient_label_serialize
+  SwiftName: "secp256k1_context.silentpaymentsRecipientLabelSerialize(self:out33:label:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # out33
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 33 }
+    Nullability: N
+  - Position: 2          # label
+    Nullability: N
+- Name: secp256k1_silentpayments_recipient_prevouts_summary_create
+  SwiftName: "secp256k1_context.silentpaymentsRecipientPrevoutsSummaryCreate(self:prevoutsSummary:outpointSmallest36:xonlyPubkeys:nXOnlyPubkeys:pubkeys:nPubkeys:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # prevouts_summary
+    Nullability: N
+  - Position: 2          # outpoint_smallest36
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 36 }
+    Nullability: N
+  - Position: 3          # xonly_pubkeys
+    Nullability: O
+  - Position: 5          # pubkeys
+    Nullability: O
+- Name: secp256k1_silentpayments_recipient_scan_outputs
+  SwiftName: "secp256k1_context.silentpaymentsRecipientScanOutputs(self:foundOutputs:nFoundOutputs:txOutputs:nTxOutputs:scanKey32:prevoutsSummary:unlabeledSpendPubkey:labelLookup:labelContext:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # found_outputs
+    Nullability: N
+  - Position: 2          # n_found_outputs
+    Nullability: N
+  - Position: 3          # tx_outputs
+    Nullability: N
+  - Position: 5          # scan_key32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 6          # prevouts_summary
+    Nullability: N
+  - Position: 7          # unlabeled_spend_pubkey
+    Nullability: N
+  - Position: 9          # label_context
+    Nullability: O
+- Name: secp256k1_silentpayments_sender_create_outputs
+  SwiftName: "secp256k1_context.silentpaymentsSenderCreateOutputs(self:generatedOutputs:recipients:nRecipients:outpointSmallest36:keypairs:nKeypairs:seckeys:nSeckeys:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # generated_outputs
+    Nullability: N
+  - Position: 2          # recipients
+    Nullability: N
+  - Position: 4          # outpoint_smallest36
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 36 }
+    Nullability: N
+  - Position: 5          # keypairs
+    Nullability: O
+  - Position: 7          # seckeys
+    Nullability: O
+- Name: secp256k1_tagged_sha256
+  SwiftName: "secp256k1_context.taggedSHA256(self:hash32:tag:taglen:msg:msglen:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # hash32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 2          # tag
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: taglen }
+    Nullability: N
+  - Position: 4          # msg
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: msglen }
+    Nullability: N
+- Name: secp256k1_xonly_pubkey_cmp
+  SwiftName: "secp256k1_context.xonlyPubkeyCmp(self:pk1:pk2:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pk1
+    Nullability: N
+  - Position: 2          # pk2
+    Nullability: N
+- Name: secp256k1_xonly_pubkey_from_pubkey
+  SwiftName: "secp256k1_context.xonlyPubkeyFromPubkey(self:xonlyPubkey:pkParity:pubkey:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # xonly_pubkey
+    Nullability: N
+  - Position: 2          # pk_parity
+    Nullability: O
+  - Position: 3          # pubkey
+    Nullability: N
+- Name: secp256k1_xonly_pubkey_parse
+  SwiftName: "secp256k1_context.xonlyPubkeyParse(self:pubkey:input32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # pubkey
+    Nullability: N
+  - Position: 2          # input32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_xonly_pubkey_serialize
+  SwiftName: "secp256k1_context.xonlyPubkeySerialize(self:output32:pubkey:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 2          # pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+- Name: secp256k1_xonly_pubkey_tweak_add
+  SwiftName: "secp256k1_context.xonlyPubkeyTweakAdd(self:outputPubkey:internalPubkey:tweak32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # output_pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 2          # internal_pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 3          # tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+- Name: secp256k1_xonly_pubkey_tweak_add_check
+  SwiftName: "secp256k1_context.xonlyPubkeyTweakAddCheck(self:tweakedPubkey32:tweakedPkParity:internalPubkey:tweak32:)"
+  Parameters:
+  - Position: 0          # ctx
+    Nullability: N
+  - Position: 1          # tweaked_pubkey32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+  - Position: 3          # internal_pubkey
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
+    Nullability: N
+  - Position: 4          # tweak32
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
+    Nullability: N
+
+Typedefs:
+- Name: secp256k1_nonce_function
+  SwiftName: "NonceFunction"
+  SwiftWrapper: struct
+  #SwiftConformsTo: Swift.OptionSet
+- Name: secp256k1_nonce_function_hardened
+  SwiftName: "NonceFunctionHardened"
+  SwiftWrapper: struct
+- Name: secp256k1_ecdh_hash_function
+  SwiftName: "ECDHHashFunction"
+  SwiftWrapper: struct
+- Name: secp256k1_ellswift_xdh_hash_function
+  SwiftName: "EllSwiftHashFunction"
+  SwiftWrapper: struct
+
+Globals:
+# None of upstream's exported constants is ever NULL, so `N` drops the
+# implicitly-unwrapped optional each would otherwise import as.
+#
+# secp256k1_context.shared must NEVER be destroyed, which is why
+# Secp256k1Context does not wrap it -- that class's deinit owns destroy().
+- Name: secp256k1_context_static
+  SwiftName: "secp256k1_context.shared"
+  Nullability: N
+- Name: secp256k1_ecdh_hash_function_default
+  SwiftName: "ECDHHashFunction.default"
+  Nullability: N
+- Name: secp256k1_ecdh_hash_function_sha256
+  SwiftName: "ECDHHashFunction.sha256"
+  Nullability: N
+- Name: secp256k1_ellswift_xdh_hash_function_bip324
+  SwiftName: "EllSwiftHashFunction.bip324"
+  Nullability: N
+- Name: secp256k1_ellswift_xdh_hash_function_prefix
+  SwiftName: "EllSwiftHashFunction.prefix"
+  Nullability: N
+- Name: secp256k1_nonce_function_bip340
+  SwiftName: "NonceFunctionHardened.bip340"
+  Nullability: N
+- Name: secp256k1_nonce_function_default
+  SwiftName: "NonceFunction.default"
+  Nullability: N
+- Name: secp256k1_nonce_function_rfc6979
+  SwiftName: "NonceFunction.rfc6979"
+  Nullability: N
