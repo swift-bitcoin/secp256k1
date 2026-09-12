@@ -59,17 +59,9 @@ libsecp256k1.pc
 ### Python
 __pycache__/
 *.py[oc]
->>>>>>> v0.7.0
 
-### Craig S. Wrong
+# Swift
 .DS_Store
 /.gitconfig/user
 xcuserdata/
-/dist.docker
-/dist.macos.x86_64
-/dist.macos.arm64
-/dist.macos
-/*.xcframework
-/*.xcframework.zip
-/Package.swift
 /.build/
