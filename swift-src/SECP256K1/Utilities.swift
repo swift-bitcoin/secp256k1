@@ -123,39 +123,39 @@ extension Context {
         if let auxiliaryRandom, auxiliaryRandom.count != 32 {
             throw Secp256k1Error.wrongLength(expected: 32, actual: auxiliaryRandom.count)
         }
-        var kp = keyPair.raw
+        let kp = CollectionOfOne(keyPair.raw)
         var sig = [UInt8](repeating: 0, count: 64)
+        var sigSpan = sig.mutableSpan
 
-        let ok = sig.withUnsafeMutableBufferPointer { s -> Int32 in
-            message.withUnsafeBufferPointer { m -> Int32 in
-                guard let auxiliaryRandom else {
-                    return unsafe raw.schnorrsigSignCustom(
-                        sig64: s.baseAddress!, msg: m.baseAddress, msglen: m.count,
-                        keypair: &kp, extraparams: nil)
-                }
-                return auxiliaryRandom.withUnsafeBufferPointer { aux -> Int32 in
-                    // The auxiliary randomness reaches BIP340's nonce function
-                    // through extraparams.ndata.
-                    //
-                    // `magic` must be set or libsecp256k1 calls the illegal
-                    // callback and aborts. Its value comes from
-                    // SECP256K1_SCHNORRSIG_EXTRAPARAMS_MAGIC
-                    // (include/secp256k1_schnorrsig.h:88), a brace-init macro
-                    // that cannot import into Swift as a value, so the bytes
-                    // are repeated here. A wrong value is not a silent
-                    // failure -- it aborts -- and the BIP340 vector tests
-                    // exercise this path, so the constant is self-checking.
-                    var extra = unsafe secp256k1_schnorrsig_extraparams(
-                        magic: (0xDA, 0x6F, 0xB3, 0x8C),
-                        noncefp: nil,
-                        ndata: UnsafeMutableRawPointer(mutating: aux.baseAddress!))
-                    return unsafe raw.schnorrsigSignCustom(
-                        sig64: s.baseAddress!, msg: m.baseAddress, msglen: m.count,
-                        keypair: &kp, extraparams: &extra)
-                }
+        let ok: Int32
+        if let auxiliaryRandom {
+            let extraParams = auxiliaryRandom.withUnsafeBufferPointer { aux in
+                // The auxiliary randomness reaches BIP340's nonce function
+                // through extraparams.ndata.
+                //
+                // `magic` must be set or libsecp256k1 calls the illegal
+                // callback and aborts. Its value comes from
+                // SECP256K1_SCHNORRSIG_EXTRAPARAMS_MAGIC
+                // (include/secp256k1_schnorrsig.h:88), a brace-init macro
+                // that cannot import into Swift as a value, so the bytes
+                // are repeated here. A wrong value is not a silent
+                // failure -- it aborts -- and the BIP340 vector tests
+                // exercise this path, so the constant is self-checking.
+                let extra = unsafe SchnorrsigExtraparams(
+                    magic: (0xDA, 0x6F, 0xB3, 0x8C),
+                    noncefp: NonceFunctionHardened.bip340,
+                    ndata: UnsafeMutableRawPointer(mutating: aux.baseAddress!))
+                return unsafe extra
             }
+            var extraParamsCollectionOfOne = unsafe CollectionOfOne(extraParams)
+            var extraParamsSpan: MutableSpan<SchnorrsigExtraparams>? = unsafe extraParamsCollectionOfOne.mutableSpan
+            ok = unsafe raw.schnorrsigSignCustom(sig64: &sigSpan, msg: message, keypair: kp.span, extraparams: &extraParamsSpan)
+        } else {
+            var nilExtraParams = unsafe MutableSpan<SchnorrsigExtraparams>?.none
+            ok = unsafe raw.schnorrsigSignCustom(sig64: &sigSpan, msg: message, keypair: kp.span, extraparams: &nilExtraParams)
         }
-        guard ok == 1 else { throw Secp256k1Error.signingFailed }
+
+         guard ok == 1 else { throw Secp256k1Error.signingFailed }
         return sig
     }
 }

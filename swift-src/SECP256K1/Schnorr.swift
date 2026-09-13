@@ -119,7 +119,7 @@ extension Context {
         guard auxiliaryRandom.count == 32 else {
             throw Secp256k1Error.wrongLength(expected: 32, actual: auxiliaryRandom.count)
         }
-        var kp = keyPair.raw
+        let kp = CollectionOfOne(keyPair.raw)
         let sig = try [UInt8](capacity: 64) { outputSpan in
             outputSpan.append(repeating: 0, count: outputSpan.freeCapacity)
             var mutableSpan = outputSpan.mutableSpan
@@ -127,10 +127,10 @@ extension Context {
             // @_lifetime(sig64: copy sig64)
             // public final func schnorrsigSign32(sig64: inout MutableSpan<UInt8>, msg32: Span<UInt8>, keypair: UnsafePointer<secp256k1_keypair>, auxRand32 aux_rand32: Span<UInt8>) -> Int32
 
-            let ok = unsafe raw.schnorrsigSign32(
+            let ok = raw.schnorrsigSign32(
                 sig64: &mutableSpan,
                 msg32: message32,
-                keypair: &kp,
+                keypair: kp.span,
                 auxRand32: auxiliaryRandom
             )
             guard ok == 1 else { throw Secp256k1Error.signingFailed }

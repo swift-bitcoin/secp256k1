@@ -25,10 +25,28 @@ Tags:
   SwiftReleaseOp: immortal
 - Name: secp256k1_pubkey
   SwiftName: "Pubkey"
+  Fields:
+  - Name: data
+    Nullability: N
 - Name: secp256k1_ecdsa_signature
   SwiftName: "ECDSASignature"
+  Fields:
+  - Name: data
+    Nullability: N
 - Name: secp256k1_keypair
   SwiftName: "Keypair"
+  Fields:
+  - Name: data
+    Nullability: N
+- Name: secp256k1_schnorrsig_extraparams
+  SwiftName: "SchnorrsigExtraparams"
+  Fields:
+  - Name: magic
+    Nullability: N
+  - Name: noncefp
+    Nullability: N
+  - Name: ndata
+    Nullability: N
 
 Functions:
 - Name: secp256k1_context_clone
@@ -821,6 +839,8 @@ Functions:
     BoundsSafety: { Kind: counted_by, BoundedBy: 32 }
     Nullability: N
   - Position: 3          # keypair
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
     Nullability: N
   - Position: 4          # aux_rand32
     NoEscape: true
@@ -840,8 +860,12 @@ Functions:
     BoundsSafety: { Kind: counted_by, BoundedBy: msglen }
     Nullability: O
   - Position: 4          # keypair
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
     Nullability: N
   - Position: 5          # extraparams
+    NoEscape: true
+    BoundsSafety: { Kind: counted_by, BoundedBy: 1 }
     Nullability: O
 - Name: secp256k1_schnorrsig_verify
   SwiftName: "secp256k1_context.schnorrsigVerify(self:sig64:msg:msglen:pubkey:)"

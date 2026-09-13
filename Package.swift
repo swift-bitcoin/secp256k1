@@ -48,7 +48,7 @@ func cTestTarget(
     .executableTarget(
         name: name,
         path: path,
-        cSettings: [.headerSearchPath("../../src")]
+        cSettings: [.headerSearchPath("../../src"), .disableWarning("shorten-64-to-32")]
             + moduleFlags
             + defines.map { .define($0) }
     )
@@ -82,6 +82,9 @@ let package = Package(
         .executable(name: "noverify_tests", targets: ["noverify_tests"]),
         .executable(name: "exhaustive_tests", targets: ["exhaustive_tests"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-crypto.git", from: "3.0.0")
+    ],
     targets: [
         // Compiles the vendored C library exactly as upstream ships it: no edits
         // to src/ or include/, no generated config header, no symlinked header
@@ -104,7 +107,7 @@ let package = Package(
             path: ".",
             sources: librarySources,
             publicHeadersPath: "swift-include",
-            cSettings: [.headerSearchPath("src"), .headerSearchPath("include")] + moduleFlags
+            cSettings: [.headerSearchPath("src"), .headerSearchPath("include"), .disableWarning("shorten-64-to-32")] + moduleFlags
         ),
 
         // The Swift-facing wrapper. Consumes the annotated module and
@@ -114,12 +117,12 @@ let package = Package(
             name: "SECP256K1",
             dependencies: ["CSECP256K1"],
             path: "swift-src/SECP256K1",
-            swiftSettings: swiftInteropSettings
+            swiftSettings: swiftInteropSettings,
         ),
 
         .testTarget(
             name: "SECP256K1Tests",
-            dependencies: ["SECP256K1", "CSECP256K1"],
+            dependencies: ["SECP256K1", "CSECP256K1", .product(name: "Crypto", package: "swift-crypto")],
             path: "swift-test/SECP256K1Test",
             // Read at runtime from the source tree via #filePath, not bundled:
             // the vector tests also read upstream's files in src/ the same way,

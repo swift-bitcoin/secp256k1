@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-import CryptoKit
+import Crypto
 import SECP256K1
 
 /// Known-answer tests driven by upstream's own vector files.
